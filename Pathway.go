@@ -458,7 +458,6 @@ func Get(codes []string) {
 			defer wg.Done()
 			defer func() { <-ch }()
 			getkeg(p)
-			fmt.Printf("saved %s\n", v+"00001.keg.gz")
 		}(v+"00001.keg", ch, &wg)
 	}
 
