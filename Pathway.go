@@ -50,8 +50,8 @@ KEGG pathway process, usage:
     Note: existing html files will be overwritten
 
 author: d2jvkpn
-version: 0.9.0
-release: 2019-04-04
+version: 0.9.1
+release: 2019-06-19
 project: https://github.com/d2jvkpn/Pathway
 lisense: GPLv3  (https://www.gnu.org/licenses/gpl-3.0.en.html)
 `
@@ -176,7 +176,7 @@ func DownloadHTML(keg, outdir string, overwrite bool) {
 	PATHs := re.FindAllString(string(bts), -1)
 
 	for i, _ := range PATHs {
-		PATHs[i] = strings.TrimLeft(PATHs[i], "PATH:")
+		PATHs[i] = strings.TrimPrefix(PATHs[i], "PATH:")
 	}
 
 	var wg sync.WaitGroup
@@ -193,8 +193,7 @@ func DownloadHTML(keg, outdir string, overwrite bool) {
 func gethtml(p, outdir string, overwrite bool, ch <-chan struct{},
 	wg *sync.WaitGroup) {
 
-	defer wg.Done()
-	defer func() { <-ch }()
+	defer func() { <-ch; defer wg.Done() }()
 
 	html := outdir + "/" + p + ".html"
 	png := outdir + "/" + p + ".png"
@@ -322,7 +321,7 @@ func ToTSV(keg, tsv string) {
 
 		switch line[0] {
 		case 'D':
-			tmp := strings.SplitN(strings.TrimLeft(line, "D      "), "\t", 2)
+			tmp := strings.SplitN(strings.TrimPrefix(line, "D      "), "\t", 2)
 			if len(tmp) != 2 {
 				continue
 			}
@@ -350,14 +349,14 @@ func ToTSV(keg, tsv string) {
 			copy(fds[9:11], A)
 			copy(fds[7:9], B)
 
-			tmp := strings.SplitN(strings.TrimLeft(line, "C    "), " ", 2)
+			tmp := strings.SplitN(strings.TrimPrefix(line, "C    "), " ", 2)
 			fds[2], fds[3] = "C"+tmp[0], tmp[1]
 
 			P := make([]string, 2)
 			if strings.Contains(fds[3], " [") {
 				P = strings.SplitN(fds[3], " [", 2)
 				fds[3] = P[0]
-				P[1] = strings.TrimRight(P[1], "]")
+				P[1] = strings.TrimSuffix(P[1], "]")
 			}
 
 			if P[1] != "" {
@@ -455,8 +454,7 @@ func Get(codes []string) {
 		ch <- struct{}{}
 		wg.Add(1)
 		go func(p string, ch <-chan struct{}, wg *sync.WaitGroup) {
-			defer wg.Done()
-			defer func() { <-ch }()
+			defer func() { <-ch; wg.Done() }()
 			getkeg(p)
 		}(v+"00001.keg", ch, &wg)
 	}
