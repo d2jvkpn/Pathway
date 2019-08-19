@@ -16,8 +16,7 @@ import (
 	"sync"
 )
 
-const HELP = `
-KEGG pathway process, usage:
+const HELP = `KEGG pathway process, usage:
 
 1. update local data table  ($EXECUTINGPATH/KEGG_data/KEGG_organism.tsv):
     $ Pathway  Update
